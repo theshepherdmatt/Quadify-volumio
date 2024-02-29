@@ -29,7 +29,7 @@ sudo apt-get install git -y
 
 * Download source files (this repository).
 ```bash
-git clone https://github.com/theshepherdmatt/Quadify.git
+git clone https://github.com/theshepherdmatt/Quadify-volumio.git
 ```
 
 * Enter the directory for Volumio
