@@ -22,29 +22,14 @@ This repository holds sources and methods for installing the specific hardware f
 sudo apt-get update
 ```
 
-* Install Git (MoOde only)
-```bash
-sudo apt-get install git -y
-```
-
 * Download source files (this repository).
 ```bash
 git clone https://github.com/theshepherdmatt/Quadify-volumio.git
 ```
 
-* Enter the directory for Volumio
-```bash
-cd Quadify/volumio
-```
-or
-* Enter the directory for MoOde
-```bash
-cd Quadify/moode
-```
-
 * Run the installation script **as root** to install all available features
 ```bash
-sudo bash install.sh
+sudo bash dist_install.sh "volumio"
 ```
 
 * Most scripts deal with hardware configuration and will require you to reboot after completion. A successful script installation will explicitly notify you from the terminal if a reboot is needed.
