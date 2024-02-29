@@ -1,14 +1,2 @@
-* Installing: Quadify OLED#2
-sudo: unknown user: volumio
-sudo: error initializing audit plugin sudoers_audit
-sudo: unknown user: volumio
-sudo: error initializing audit plugin sudoers_audit
-sudo: unknown user: volumio
-sudo: error initializing audit plugin sudoers_audit
-sudo: unknown user: volumio
-sudo: error initializing audit plugin sudoers_audit
-sudo: unknown user: volumio
-sudo: error initializing audit plugin sudoers_audit
-sudo: unknown user: volumio
-sudo: error initializing audit plugin sudoers_audit
-Started at 06:08:27, finished at 06:08:33
+* Installing: Quadify OLED#2 for Volumio
+Installation started at 20:15:35, finished at 20:16:40
