@@ -41,14 +41,14 @@ const readChannel = (channel) => {
   });
 };
 
-// Function to set volume
-const adjustVolumeWithMPC = (volume) => {
-  exec(`mpc volume ${volume}`, (error, stdout, stderr) => {
+// Function to set volume using Volumio
+const adjustVolumeWithVolumio = (volume) => {
+  exec(`volumio volume ${volume}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
       return;
     }
-    console.log(`Volume set to ${volume} with MPC: ${stdout}`);
+    console.log(`Volume set to ${volume} with Volumio: ${stdout}`);
     if (stderr) console.log(`stderr: ${stderr}`);
   });
 };
@@ -57,12 +57,11 @@ let lastVolume = -1;
 let stableReadings = 0;
 const volumeChangeThreshold = 2;
 const pollingInterval = 500;
-let debounceCounter = 0; // Counter to track debounce period
+let debounceCounter = 0;
 
-const debounceThreshold = 5; // Lower debounce threshold for faster response
-const confirmationThreshold = 1; // Slightly reduce confirmation threshold
+const debounceThreshold = 5;
+const confirmationThreshold = 1;
 
-// Polling function with debounce logic
 const startPolling = () => {
   const channel = 0;
   setInterval(async () => {
@@ -71,27 +70,26 @@ const startPolling = () => {
       const adjustedValue = adjustSensitivity(value);
       if (Math.abs(adjustedValue - lastVolume) > volumeChangeThreshold) {
         if (debounceCounter < debounceThreshold) {
-          debounceCounter++; // Increment debounce counter
+          debounceCounter++;
         } else {
           stableReadings++;
           if (stableReadings >= confirmationThreshold) {
             console.log(`Potentiometer Value: ${value}, Adjusting volume to: ${adjustedValue}`);
-            adjustVolumeWithMPC(adjustedValue);
+            adjustVolumeWithVolumio(adjustedValue);
             lastVolume = adjustedValue;
             stableReadings = 0;
-            debounceCounter = 0; // Reset debounce counter
+            debounceCounter = 0;
           }
         }
       } else {
-        stableReadings = 0; // Reset stable readings counter
-        debounceCounter = 0; // Reset debounce counter if readings are not changing significantly
+        stableReadings = 0;
+        debounceCounter = 0;
       }
     } catch (error) {
       console.error('Error:', error);
     }
   }, pollingInterval);
 };
-
 
 process.stdin.resume();
 console.log('Script is running, press CTRL+C to exit');
