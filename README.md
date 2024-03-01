@@ -7,6 +7,8 @@ Contained within are all necessary files and instructions to equip your Raspberr
   
 ### For Volumio Users:
 * Installation of OLED Display
+* Installation of Buttons and Leds
+* Installation of rotary encoder
 
 ## Key Considerations:
 * **This toolkit is mostly intended for new setups but it’s crafted to be forgiving enough for use on existing Volumio installations that might need repairs or adjustments post-update. While designed with our proprietary configurations in mind, it’s not exhaustively tested in every conceivable environment. Proceed with caution, understanding the risk of needing a complete system reset in extreme situations. Always ensure your data is backed up.
