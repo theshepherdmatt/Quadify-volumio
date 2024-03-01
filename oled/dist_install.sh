@@ -45,7 +45,7 @@ case "$1" in
         echo "* Installing: Quadify OLED#2 for Volumio" > install_log.txt
         install_dep_volumio
         # Installing npm dependencies
-        npm install async i2c-bus pi-spi onoff date-and-time socket.io-client@2.1.1
+        npm install async i2c-bus pi-spi onoff date-and-time socket.io-client@2.1.1 spi-device
 
         # Enable spi-dev module to allow hardware interfacing
         echo "spi-dev" | sudo tee -a /etc/modules > /dev/null
