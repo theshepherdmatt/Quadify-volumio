@@ -15,7 +15,7 @@ install_node_and_npm() {
     if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
         echo -e "${GREEN}Node.js and npm are already in harmony.${NC}"
     else
-        echo -e "${YELLOW}Node.js or npm not found. Setting up the stage...${NC}"
+        echo -e "${YELLOW}Node.js or npm not found. Setting up the system...${NC}"
         sudo apt-get update
         sudo apt-get install -y nodejs npm
         # Encore: Check again after installation
@@ -31,13 +31,13 @@ install_node_and_npm() {
 # Function to install dependencies for Volumio with a touch of audiophile elegance
 install_dep_volumio() {
     if apt-get -qq install build-essential > /dev/null 2>&1; then
-        echo -e "${GREEN}Essential building blocks are in place, like a solid vinyl collection.${NC}"
+        echo -e "${GREEN}Essential building blocks are in place, like a solid music collection.${NC}"
     else
-        echo -e "${YELLOW}Missing some vinyl in your collection, attempting a rare find workaround...${NC}"
+        echo -e "${YELLOW}Missing some tunes in your collection, attempting a rare find workaround...${NC}"
         if bash Workaround_BuildEssentials.sh > /dev/null 2>> $LOG_FILE; then
-            echo -e "${GREEN}...Success! Your collection is now complete.${NC}"
+            echo -e "${GREEN}...Success! Your Dac is almost complete.${NC}"
         else
-            echo -e "${RED}...No luck, the rare vinyl remains elusive. The OLED display can't be installed without it.${NC}"
+            echo -e "${RED}...No luck, the tunes remain elusive. The OLED display can't be installed without it.${NC}"
             exit 1
         fi
     fi
@@ -51,7 +51,7 @@ install_node_and_npm
 case "$1" in
     'volumio')
         start_time="$(date +"%T")"
-        echo "* Setting up the stage for Quadify OLED#2 on Volumio" > $LOG_FILE
+        echo "* Setting up the stage for Quadify OLED on Volumio" > $LOG_FILE
         install_dep_volumio
         npm install async i2c-bus pi-spi onoff date-and-time socket.io-client@2.1.1 spi-device &>> $LOG_FILE
 
@@ -70,10 +70,9 @@ case "$1" in
 
         # Restart the OLED service, like dropping the needle on a fresh record
         sudo systemctl restart oled
-        echo -e "${GREEN}The Quadify OLED stage is set, let the music play.${NC}"
+        echo -e "${GREEN}The Quadify Dac is set, Happy Listening!!${NC}"
         ;;
 
-    # Add similar themed messages and steps for Moode installation...
 esac
 
-echo "Installation began at $start_time and concluded at $(date +"%T"). Enjoy the symphony!" >> $LOG_FILE
+echo "Installation began at $start_time and concluded at $(date +"%T"). Enjoy the music!" >> $LOG_FILE
