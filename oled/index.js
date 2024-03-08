@@ -414,7 +414,7 @@ if (this.page === "clock") return;
                 //this.driver.setCursor(100, 45);
                 //this.driver.writeString( fonts.monospace ,2,fdate,4);
 
-                this.driver.setCursor(70,9);
+                this.driver.setCursor(70,15);
                 this.driver.writeString( fonts.monospace ,4,ftime,8);
                 //this.driver.drawLine(1, 35, 255, 35, 5, false);
 
