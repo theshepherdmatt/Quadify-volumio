@@ -1,3 +1,50 @@
+const http = require('http');
+
+function checkVolumioStatus(onReady) {
+    const options = {
+        host: 'localhost',
+        port: 3000,
+        path: '/api/v1/getState',
+        method: 'GET'
+    };
+
+    console.log('Checking Volumio status...');
+
+    const request = http.request(options, (res) => {
+        let data = '';
+
+        // A chunk of data has been received.
+        res.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        // The whole response has been received.
+        res.on('end', () => {
+            try {
+                const parsedData = JSON.parse(data);
+                if (parsedData.status === 'play' || parsedData.status === 'stop' || parsedData.status === 'pause') {
+                    console.log('Volumio is ready.');
+                    onReady();
+                } else {
+                    console.log('Volumio is not ready yet. Retrying...');
+                    setTimeout(() => checkVolumioStatus(onReady), 5000); // Check again after 5 seconds
+                }
+            } catch (e) {
+                console.log('Error parsing Volumio status. Retrying...');
+                setTimeout(() => checkVolumioStatus(onReady), 5000); // Check again after 5 seconds
+            }
+        });
+    });
+
+    request.on('error', (e) => {
+        console.error(`Problem with request: ${e.message}`);
+        setTimeout(() => checkVolumioStatus(onReady), 5000); // Check again after 5 seconds
+    });
+
+    request.end();
+}
+
+
 const { exec } = require('child_process');
 
 // Function to run a script
@@ -36,7 +83,6 @@ const date = require('date-and-time');
 const oled = require('./oled.js');
 const fonts = require('./fonts.js');
 const fs = require("fs");
-const http = require("http");
 
 var DRIVER;
 
@@ -660,22 +706,23 @@ fs.readFile("config.json",(err,data)=>{
 		}
 	);
 
-	function start_app(){
-
-		let time_remaining = 0;
-		if(logo_start_display_time){
-			time_remaining = LOGO_DURATION - ( new Date().getTime() - logo_start_display_time.getTime() )  ;
-			time_remaining = (time_remaining<=0)?0:time_remaining;
-		}
-		setTimeout( ()=>{
-			OLED.driver.fullRAMclear( ()=>{
-				OLED.playback_mode();
-				OLED.listen_to(distro,1000);
-				OLED.listen_to("ip",1000);
-			} );
-		
-		}, time_remaining );
+	function start_app() {
+	    checkVolumioStatus(() => {
+	        let time_remaining = 0;
+	        if (logo_start_display_time) {
+	            time_remaining = LOGO_DURATION - (new Date().getTime() - logo_start_display_time.getTime());
+	            time_remaining = (time_remaining <= 0) ? 0 : time_remaining;
+	        }
+	        setTimeout(() => {
+	            OLED.driver.fullRAMclear(() => {
+	                OLED.playback_mode();
+	                OLED.listen_to(distro, 1000);
+	                OLED.listen_to("ip", 1000);
+	            });
+	        }, time_remaining);
+	    });
 	}
+
 
 	function exitcatcher(options) {
 		if (options.cleanup) OLED.driver.turnOffDisplay();
