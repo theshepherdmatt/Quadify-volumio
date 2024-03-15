@@ -112,6 +112,6 @@ function updatePlayPauseLEDs() {
 setTimeout(() => {
     detectPlatform(() => {
         check_buttons_and_update_leds();
-        setInterval(updatePlayPauseLEDs, 5000); // Check every 5 seconds
+        setInterval(updatePlayPauseLEDs, 3000); // Check every 5 seconds
     });
-}, 45000); // Wait for the startup indicator to finish before starting the button checks and Volumio state updates.
+}, 50000); // Wait for the startup indicator to finish before starting the button checks and Volumio state updates.
