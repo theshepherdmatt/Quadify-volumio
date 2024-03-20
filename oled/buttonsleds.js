@@ -11,15 +11,12 @@ const MCP23017_GPPUA = 0x0C;
 const MCP23017_GPPUB = 0x0D;
 
 const bus = i2c.openSync(1);
-console.log("Configuring MCP23017 I/O expander after delay...");
+console.log("Configuring MCP23017 I/O expander.");
 
-// Delayed configuration to avoid conflict with startup indicator
-setTimeout(() => {
-    bus.writeByteSync(MCP23017_ADDRESS, MCP23017_IODIRB, 0x3C);
-    bus.writeByteSync(MCP23017_ADDRESS, MCP23017_GPPUB, 0x3C);
-    bus.writeByteSync(MCP23017_ADDRESS, MCP23017_IODIRA, 0x00);
-    console.log("MCP23017 ports configured.");
-}, 45000); // Adjust the delay as necessary
+// Configure Ports
+bus.writeByteSync(MCP23017_ADDRESS, MCP23017_IODIRB, 0x3C);
+bus.writeByteSync(MCP23017_ADDRESS, MCP23017_GPPUB, 0x3C);
+bus.writeByteSync(MCP23017_ADDRESS, MCP23017_IODIRA, 0x00);
 
 const button_map = [[2, 1], [4, 3], [6, 5], [8, 7]];
 let prev_button_state = [[1, 1], [1, 1], [1, 1], [1, 1]];
@@ -41,19 +38,41 @@ function read_button_matrix() {
 }
 
 let platform = '';
-
 function detectPlatform(callback) {
     exec("volumio status", (error, stdout, stderr) => {
-        platform = error ? 'moode' : 'volumio';
+        platform = error ? 'unknown' : 'volumio';
         console.log(`Detected platform: ${platform}`);
         if (callback) callback();
     });
 }
 
 function executeCommand(command) {
-    let cmd = platform === 'volumio' ? `volumio ${command}` : `mpc ${command}`;
-    if (cmd) exec(cmd);
+    let cmd = '';
+
+    if (platform === 'volumio') {
+        cmd = `volumio ${command}`;
+    } else {
+        // If not Volumio or if additional commands are needed, specify here
+    }
+
+    // Special handling for commands that require sudo
+    if (command.includes("sudo")) {
+        cmd = command;
+    }
+
+    if (cmd) {
+        console.log(`Executing: ${cmd}`);
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error executing command: ${error.message}`);
+                return;
+            }
+            if (stdout) console.log(stdout);
+            if (stderr) console.error(`stderr: ${stderr}`);
+        });
+    }
 }
+
 
 function check_buttons_and_update_leds() {
     const button_matrix = read_button_matrix();
@@ -64,6 +83,8 @@ function check_buttons_and_update_leds() {
             if (current_button_state === 0 && prev_button_state[row][col] !== current_button_state) {
                 console.log(`Button ${button_id} pressed`);
                 executeCommand(getCommandForButton(button_id));
+                const led_state = 1 << (button_id - 1);
+                control_leds(led_state);
             }
             prev_button_state[row][col] = current_button_state;
         }
@@ -75,43 +96,42 @@ function getCommandForButton(buttonId) {
     switch (buttonId) {
         case 1: return "play";
         case 2: return "pause";
-        case 3: return "next";
-        case 4: return "previous";
+        case 3: return "previous";
+        case 4: return "next";
         case 5: return "repeat";
         case 6: return "random";
-        case 7: return "clear"; // Custom command
+        case 7: return "clear";
         case 8: return "sudo systemctl restart oled.service";
         default: return "";
     }
 }
 
-const PLAY_LED = 1; // Update these based on your actual LED connections
-const PAUSE_STOP_LED = 2;
-let lastKnownState = null;
+const PLAY_LED = 1;
+const PAUSE_LED = 2;
 
 function updatePlayPauseLEDs() {
-    exec("volumio status", (error, stdout, stderr) => {
-        if (error) return;
+    if (platform === 'volumio') {
+        exec("volumio status", (error, stdout, stderr) => {
+            if (error) return;
 
-        let currentState = null;
-        try {
-            currentState = JSON.parse(stdout).status;
-        } catch (e) {
-            return;
-        }
+            let currentState = null;
+            try {
+                currentState = JSON.parse(stdout).status;
+            } catch (e) {
+                return;
+            }
 
-        if (currentState !== lastKnownState) {
-            lastKnownState = currentState;
-            let led_state = currentState === 'play' ? (1 << (PLAY_LED - 1)) : (1 << (PAUSE_STOP_LED - 1));
+            let led_state = currentState === 'play' ? (1 << (PLAY_LED - 1)) : (1 << (PAUSE_LED - 1));
             control_leds(led_state);
-            console.log(`LED updated to represent ${currentState}`);
-        }
-    });
+        });
+    }
 }
 
-setTimeout(() => {
-    detectPlatform(() => {
-        check_buttons_and_update_leds();
-        setInterval(updatePlayPauseLEDs, 3000); // Check every 5 seconds
-    });
-}, 50000); // Wait for the startup indicator to finish before starting the button checks and Volumio state updates.
+function startStatusUpdateLoop() {
+    setInterval(updatePlayPauseLEDs, 5000); // Adjust frequency as needed
+}
+
+detectPlatform(() => {
+    check_buttons_and_update_leds();
+    startStatusUpdateLoop();
+});
