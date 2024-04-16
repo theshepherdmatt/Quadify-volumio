@@ -53,7 +53,7 @@ case "$1" in
         start_time="$(date +"%T")"
         echo "* Setting up the stage for Quadify OLED on Volumio" > $LOG_FILE
         install_dep_volumio
-        npm install async i2c-bus pi-spi onoff date-and-time socket.io-client@2.1.1 spi-device &>> $LOG_FILE
+        npm install async i2c-bus pi-spi onoff date-and-time socket.io-client@2.1.1 spi-device >> $LOG_FILE 2>> $LOG_FILE
 
         # Setting up the stage for SPI interfacing, like fine-tuning your turntable
         echo "spi-dev" | sudo tee -a /etc/modules > /dev/null
