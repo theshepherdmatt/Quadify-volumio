@@ -21,6 +21,8 @@ install_node_and_npm() {
         # Encore: Check again after installation
         if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
             echo -e "${GREEN}Node.js and npm have tuned in perfectly.${NC}"
+            echo -e "${YELLOW}Initializing package setup...${NC}"
+            npm init -y
         else
             echo -e "${RED}Encore failed. Node.js and npm are out of tune. Check your package manager or install manually.${NC}"
             exit 1
