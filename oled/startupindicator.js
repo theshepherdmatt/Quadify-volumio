@@ -1,5 +1,5 @@
 const i2c = require('i2c-bus');
-const MCP23017_ADDRESS = 0x27;
+const MCP23017_ADDRESS = 0x20;
 const bus = i2c.openSync(1);
 
 // Add a delay to ensure the system is fully up before executing
