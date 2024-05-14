@@ -1,5 +1,5 @@
 const i2c = require('i2c-bus');
-const MCP23017_ADDRESS = 0x27;
+const MCP23017_ADDRESS = 0x20;
 const { exec } = require('child_process');
 
 // MCP23017 register definitions
@@ -83,7 +83,7 @@ function check_buttons_and_update_leds() {
             if (current_button_state === 0 && prev_button_state[row][col] !== current_button_state) {
                 console.log(`Button ${button_id} pressed`);
                 executeCommand(getCommandForButton(button_id));
-                const led_state = 1 << (button_id - 1);
+                const led_state = 1 << (8 - button_id);
                 control_leds(led_state);
             }
             prev_button_state[row][col] = current_button_state;
@@ -106,8 +106,8 @@ function getCommandForButton(buttonId) {
     }
 }
 
-const PLAY_LED = 1;
-const PAUSE_LED = 2;
+const PLAY_LED = 8;
+const PAUSE_LED = 7;
 
 function updatePlayPauseLEDs() {
     if (platform === 'volumio') {
