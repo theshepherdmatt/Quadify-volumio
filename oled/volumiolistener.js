@@ -1,6 +1,5 @@
 const io = require('socket.io-client');
 const EventEmitter = require('events').EventEmitter;
-const { inherits } = require('util');
 
 class VolumioListener extends EventEmitter {
     constructor(host = 'http://localhost:3000', refreshrate_ms = 1000) {
@@ -18,6 +17,8 @@ class VolumioListener extends EventEmitter {
         this.idle = false;
         this._idleTimeout = null;
         this.idleTime = 900;
+        this.lastSeekEmit = Date.now();
+        this.seekThrottleMs = 500; // Throttle seek updates to once every 500ms
     }
 
     compareData(data) {
@@ -38,19 +39,31 @@ class VolumioListener extends EventEmitter {
             case "artist":
             case "album":
                 this.formatMainString();
-                this.emit("trackChange", this.formatedMainString);
+                if (this.formatedMainString !== this.data.formatedMainString) {
+                    this.emit("trackChange", this.formatedMainString);
+                    this.data.formatedMainString = this.formatedMainString;
+                }
                 if (this.state === "play") this.resetIdleTimeout();
                 break;
             case "status":
-                this.state = data;
-                this.resetIdleTimeout();
-                this.emit("stateChange", data);
+                if (this.state !== data) {
+                    this.state = data;
+                    this.resetIdleTimeout();
+                    this.emit("stateChange", data);
+                }
                 break;
             case "duration":
             case "seek":
-                this.resetIdleTimeout();
-                this.seekFormat();
-                this.emit("seekChange", this.formatedSeek);
+                const now = Date.now();
+                if (now - this.lastSeekEmit > this.seekThrottleMs) {
+                    this.resetIdleTimeout();
+                    this.seekFormat();
+                    if (this.formatedSeek.seek_string !== this.data.seek_string) {
+                        this.emit("seekChange", this.formatedSeek);
+                        this.data.seek_string = this.formatedSeek.seek_string;
+                        this.lastSeekEmit = now;
+                    }
+                }
                 break;
             case "bitrate":
                 this.emit("bitRateChange", data);
@@ -118,8 +131,6 @@ class VolumioListener extends EventEmitter {
             this._socket.emit("getQueue");
         }, this.refreshrate_ms);
 
-        this._socket.emit("getState");
-
         this._socket.on("pushState", (data) => {
             if (!this.firstRequestConsumed) {
                 this.firstRequestConsumed = true;
@@ -130,7 +141,6 @@ class VolumioListener extends EventEmitter {
             this.waiting = false;
         });
 
-        this._socket.emit("getQueue");
         this._socket.on("pushQueue", (resdata) => {
             if (resdata && resdata[0]) {
                 const additionnalTrackData = resdata[0], filteredData = {};
